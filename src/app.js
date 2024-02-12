@@ -1,12 +1,37 @@
-const exppress = require("exppress");
+const express = require("express");
+const dotenv = require("dotenv");
+const usersRouter = require("./routes/users");
+const booksRouter = require("./routes/books");
+const loggerOne = require("./middlewares/loggerOne");
+const bodyParser = require("body-parser");
+const cors = require("cors");
+const mongoose = require("mongoose");
 
-const app = exppress();
+dotenv.config();
 
-app.get("/", (response, request) => {
-  response.statusCode = 200;
-  
-});
+const {
+  PORT = 3005,
+  API_URL = "http://127.0.0.1",
+  MONGO_URL = "mongodb://localhost:27017/backend",
+} = process.env;
 
-app.listen(3005, () => {
-  console.log("Сервер запущен по адресу http//127.0.0.1:3005");
+mongoose
+  .connect(MONGO_URL)
+  .then(() => {
+    console.log("Connection to MongoDB successfully established");
+  })
+  .catch((error) => {
+    console.error("Error connecting to MongoDB:", error);
+  });
+const app = express();
+
+app.use(cors());
+app.use(bodyParser.json());
+app.use(loggerOne);
+
+app.use(usersRouter);
+app.use(booksRouter);
+
+app.listen(PORT, () => {
+  console.log(`Сервер запущен по адресу ${API_URL}:${PORT}`);
 });
